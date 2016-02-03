@@ -15,7 +15,7 @@ class FrontendTestCase(unittest.TestCase):
         self.app = app.test_client()
 
     def make_auth_header(self, username, password):
-        value = b64encode(bytes("{0}:{1}".format(username, password), 'ascii'))
+        value = b64encode("{0}:{1}".format(username, password).encode('ascii'))
 
         return {
             'Authorization': b'Basic ' + value

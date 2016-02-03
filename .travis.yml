@@ -6,6 +6,7 @@ env:
   - TOXENV=py32
   - TOXENV=py33
   - TOXENV=py34
+  - TOXENV=py35
 
 matrix:
   allow_failures:
@@ -13,6 +14,7 @@ matrix:
     - env: TOXENV=py32
     - env: TOXENV=py33
     - env: TOXENV=py34
+    - env: TOXENV=py35
 
 install:
   - pip install coveralls
