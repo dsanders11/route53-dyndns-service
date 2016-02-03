@@ -14,7 +14,7 @@ matrix:
 
 install:
   - pip install coveralls
-  - pip install virtualenv<14.0.0
+  - pip install 'virtualenv<14.0.0'
   - pip install tox
 
 script:
