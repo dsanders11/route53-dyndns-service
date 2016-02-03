@@ -10,14 +10,11 @@ env:
 
 matrix:
   allow_failures:
-    - env: TOXENV=py27
-    - env: TOXENV=py32
-    - env: TOXENV=py33
-    - env: TOXENV=py34
     - env: TOXENV=py35
 
 install:
   - pip install coveralls
+  - pip install virtualenv<14.0.0
   - pip install tox
 
 script:
