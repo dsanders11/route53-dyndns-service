@@ -22,19 +22,18 @@ GENERAL_ERROR = '911'
 def verify_auth(username, password):
     """ Verify the HTTP Basic Auth credentials """
 
+    # TODO - Replace with auth from config
     return username == 'admin' and password == 'secret'
 
 
 def authenticate_response(forbidden=False):
     """ Generate an authenticate response for HTTP Basic Auth """
 
-    status_code = 403 if forbidden else 401
-
     headers = {
         'WWW-Authenticate': 'Basic realm="{}"'.format(AUTH_REALM)
     }
 
-    return (BAD_AUTH, status_code, headers)
+    return (BAD_AUTH, 403 if forbidden else 401, headers)
 
 
 def api_auth(view):

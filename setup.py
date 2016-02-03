@@ -25,6 +25,7 @@ setup(
     entry_points={
         "console_scripts": ["route53_dyndns=route53_dyndns.cmdline:main"],
     },
+    tests_require=['mock'],
     test_suite="tests",
     classifiers=[
         "Development Status :: 1 - Planning",

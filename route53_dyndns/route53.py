@@ -7,7 +7,7 @@ class Route53Exception(Exception):
     pass
 
 
-def get_client():
+def get_client():  # pragma: no cover
     """ Helper function to get an authenticated Route 53 client """
 
     return boto3.client('route53')
@@ -16,7 +16,7 @@ def get_client():
 def find_resource_record(record_name, client=None):
     """ Find a DNS resource record on Route 53 """
 
-    if not client:
+    if not client:  # pragma: no cover
         client = get_client()
 
     if not record_name:
@@ -43,7 +43,7 @@ def find_resource_record(record_name, client=None):
 def update_resource_record(resource_record, value, client=None):
     """ Update a resource record on Route 53 with a new value """
 
-    if not client:
+    if not client:  # pragma: no cover
         client = get_client()
 
     record_name = resource_record['Name']
