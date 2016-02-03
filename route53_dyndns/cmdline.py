@@ -5,7 +5,7 @@
 import logging
 import sys
 
-from optparse import OptionParser, BadOptionError, AmbiguousOptionError
+from optparse import OptionParser
 
 from route53_dyndns import __version__, app
 

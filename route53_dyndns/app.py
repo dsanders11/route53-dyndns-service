@@ -1,11 +1,11 @@
 from __future__ import unicode_literals
 
 try:
-  basestring
+    basestring
 except NameError:
-  basestring = str
+    basestring = str
 
-from flask import Flask, Response
+from flask import Flask
 
 
 class DynDnsFlask(Flask):
