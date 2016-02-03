@@ -37,7 +37,7 @@ def find_resource_record(record_name, client=None):
     assert not response['IsTruncated'], "Expected single record"
     assert len(response['ResourceRecordSets']) == 1, "Expected single record"
 
-    response = response['ResourceRecordSets'][0]
+    return response['ResourceRecordSets'][0]
 
 
 def update_resource_record(resource_record, value, client=None):
@@ -49,7 +49,7 @@ def update_resource_record(resource_record, value, client=None):
     record_name = resource_record['Name']
     record_type = resource_record['Type']
     set_identifier = resource_record['SetIdentifier']
-    current_value = resource_record['ResourceRecords']['Value']
+    current_value = resource_record['ResourceRecords'][0]['Value']
 
     if value == current_value:
         return True  # Nothing to do, it is already up-to-date

@@ -1,3 +1,5 @@
+""" HTTP API for updating dynamic DNS records """
+
 from __future__ import unicode_literals
 
 from functools import wraps
@@ -67,16 +69,17 @@ def nic_update():
     try:
         hostname = request.args.get('hostname')
         resource_record = route53.find_resource_record(hostname)
-    except route53.Route53Exception:
-        return GENERAL_ERROR
     except ValueError:
         return NO_HOST
+    except:
+        return GENERAL_ERROR
 
     if not resource_record:
         return NO_HOST
 
     # TODO - A sanity check of the value would be good, but good luck doing it
     #        easily in anything before Python 3.3+ which got 'ipaddress' module
+    # TODO - Comma separated values should be allowed
     myip = request.args.get('myip', request.remote_addr)
 
     if myip == resource_record['ResourceRecords']['Value']:
@@ -85,7 +88,7 @@ def nic_update():
     try:
         if not route53.update_resource_record(resource_record, myip):
             return GENERAL_ERROR
-    except route53.Route53Exception:
+    except:
         return GENERAL_ERROR
 
     return IP_CHANGED % myip
