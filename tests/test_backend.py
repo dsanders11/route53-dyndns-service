@@ -31,18 +31,16 @@ class MockRoute53Client(object):
             'MaxItems': max_items
         }
 
-    def list_resource_record_sets(self, *args, HostedZoneId=None,
+    def list_resource_record_sets(self, HostedZoneId=None,
                                   StartRecordName=None, MaxItems=None):
-        assert len(args) == 0
         assert HostedZoneId
         assert StartRecordName
         assert MaxItems
 
         return self._resource_records_response(StartRecordName, MaxItems)
 
-    def change_resource_record_sets(self, *args, HostedZoneId=None,
+    def change_resource_record_sets(self, HostedZoneId=None,
                                     ChangeBatch=None):
-        assert len(args) == 0
         assert HostedZoneId
         assert ChangeBatch
 
