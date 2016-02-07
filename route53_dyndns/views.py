@@ -81,7 +81,7 @@ def nic_update():
     # TODO - Comma separated values should be allowed
     myip = request.args.get('myip', request.remote_addr)
 
-    if myip == resource_record['ResourceRecords']['Value']:
+    if myip == resource_record['ResourceRecords'][0]['Value']:
         return NO_CHANGE % myip
 
     try:

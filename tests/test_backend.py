@@ -6,6 +6,8 @@ from route53_dyndns.route53 import (
 
 from mock import patch
 
+from .helpers import new_resource_record
+
 
 class MockRoute53Client(object):
     def _resource_record(self, name, value):
@@ -25,7 +27,7 @@ class MockRoute53Client(object):
     def _resource_records_response(self, name, max_items):
         return {
             'ResourceRecordSets': [
-                self._resource_record(name, 'string')
+                new_resource_record(name, 'string')
             ],
             'IsTruncated': False,
             'MaxItems': max_items
@@ -91,8 +93,8 @@ class BackendTestCase(unittest.TestCase):
 
         # Test a go wrong case where there are multiple resource record results
         multi_result = client._resource_records_response(hostname, 1)
-        multi_result['ResourceRecordSets'] += client._resource_record(hostname,
-                                                                      'whoops')
+        multi_result['ResourceRecordSets'] += new_resource_record(hostname,
+                                                                  'whoops')
 
         with patch.object(client, 'list_resource_record_sets') as mocked:
             mocked.return_value = multi_result
@@ -106,7 +108,7 @@ class BackendTestCase(unittest.TestCase):
         client = MockRoute53Client()
         hostname = "www.google.com"
         value = '127.0.0.1'
-        record = client._resource_record(hostname, value)
+        record = new_resource_record(hostname, value)
 
         # Go right case where the value is the same as the in the record
         updated = update_resource_record(record, value, client=client)
