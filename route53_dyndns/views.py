@@ -12,6 +12,7 @@ from route53_dyndns import route53
 AUTH_REALM = "Route 53 DNS Update API"
 
 BAD_AUTH = 'badauth'
+BAD_USER_AGENT = 'badagent'
 IP_CHANGED = 'good %s'
 NO_CHANGE = 'nochg %s'
 NO_HOST = 'nohost'
@@ -22,8 +23,9 @@ GENERAL_ERROR = '911'
 def verify_auth(username, password):
     """ Verify the HTTP Basic Auth credentials """
 
-    # TODO - Replace with auth from config
-    return username == 'admin' and password == 'secret'
+    config = app.config
+
+    return username == config['USERNAME'] and password == config['PASSWORD']
 
 
 def authenticate_response(forbidden=False):
@@ -63,7 +65,13 @@ def nic_update():
     if request.args.get('offline'):
         return NOT_SUPPORTED
 
-    # TODO - Add user agent check
+    # Check for a user agent
+    user_agent = request.user_agent.string
+
+    if not user_agent:
+        print("WTF")
+    if not user_agent or user_agent in app.config['BAD_USER_AGENTS']:
+        return BAD_USER_AGENT
 
     try:
         hostname = request.args.get('hostname')

@@ -8,3 +8,6 @@ WORKDIR /usr/src/app
 
 COPY . /usr/src/app
 RUN python setup.py install
+RM /usr/src/app
+
+CMD [ "route53_dyndns" ]

@@ -1,5 +1,7 @@
 """ Backend functionality for communicating with Route 53 and updating DNS """
 
+from route53_dyndns.app import app
+
 import boto3
 
 
@@ -10,7 +12,11 @@ class Route53Exception(Exception):
 def get_client():  # pragma: no cover
     """ Helper function to get an authenticated Route 53 client """
 
-    return boto3.client('route53')
+    AWS_ACCESS_KEY = app.config['AWS_ACCESS_KEY']
+    AWS_SECRET_ACCESS_KEY = app.config['AWS_SECRET_ACCESS_KEY']
+
+    return boto3.client('route53', aws_access_key_id=AWS_ACCESS_KEY,
+                        aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 
 def find_resource_record(record_name, client=None):

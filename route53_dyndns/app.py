@@ -1,11 +1,15 @@
 from __future__ import unicode_literals
 
+import os
+
 try:
     basestring
 except NameError:
     basestring = str
 
 from flask import Flask
+
+CONFIG_ENVIRONMENT_VAR = 'ROUTE53_DYNDNS_CONFIG'
 
 
 class DynDnsFlask(Flask):
@@ -23,8 +27,33 @@ class DynDnsFlask(Flask):
 
         return response
 
+    def sanity_check_config(self):
+        # Required configuration settings
+        required_settings = (
+            'USERNAME', 'PASSWORD', 'AWS_ACCESS_KEY', 'AWS_SECRET_ACCESS_KEY', 'bb'
+        )
+
+        for setting in required_settings:
+            if not app.config.get(setting, None):
+                raise RuntimeError(
+                    "'{}' is a required config setting".format(setting))
+
+        # Optional settings
+        app.config.setdefault('BAD_USER_AGENTS', [])
+
 
 app = DynDnsFlask('route53_dyndns')
+
+try:
+    if os.environ.get(CONFIG_ENVIRONMENT_VAR):
+        app.config.from_envvar(CONFIG_ENVIRONMENT_VAR)
+    else:
+        config_file = os.path.expanduser('~/.route53_dyndns.cfg')
+        app.config.from_pyfile(config_file)
+except Exception as e:
+    raise RuntimeError("Failed to load config: " + e.msg)
+else:
+    app.sanity_check_config()
 
 
 import route53_dyndns.views  # noqa

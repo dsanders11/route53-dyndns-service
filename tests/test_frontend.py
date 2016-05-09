@@ -27,12 +27,37 @@ class FrontendTestCase(unittest.TestCase):
     def get_with_auth(self, url, username='admin', password='admin', **kwargs):
         auth_header = self.make_auth_header(username, password)
 
+        if 'environ_base' in kwargs:
+            kwargs['environ_base'].setdefault('HTTP_USER_AGENT', "Client")
+        else:
+            kwargs['environ_base'] = {'HTTP_USER_AGENT': "Client"}
+
         return self.app.get(url, headers=auth_header, **kwargs)
 
     def assertResponseEqual(self, expected, rv):
         response = rv.get_data().decode('utf-8')
 
-        return self.assertEqual(expected + '\r\n', response)
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(expected + '\r\n', response)
+
+    def test_app_sanity_check_config(self):
+        # Test required settings
+        for setting in ('USERNAME', 'PASSWORD'):
+            with patch.dict(app.config):
+                app.config.pop(setting)
+
+                with self.assertRaises(RuntimeError):
+                    app.sanity_check_config()
+
+        # Test optional settings
+        for setting in ('BAD_USER_AGENTS',):
+            with patch.dict(app.config):
+                app.config.pop(setting)
+                self.assertFalse(setting in app.config)
+
+                app.sanity_check_config()
+
+                self.assertTrue(setting in app.config)
 
     def test_app_response(self):
         response = "Hello World!"
@@ -66,9 +91,14 @@ class FrontendTestCase(unittest.TestCase):
         rv = self.app.get(self.url + '?hostname=foo.com')
         self.assertNotEqual(rv.status_code, 404)
 
-        # Test the authentication logic for the view
+        # Test the authentication logic for a view
         with patch('route53_dyndns.views.verify_auth') as mocked:
-            auth_url = self.url + '?hostname=foo.com'
+            auth_url = '/test_auth'
+
+            @app.route(auth_url)
+            @views.api_auth
+            def test_view():
+                return 'OK'
 
             # Test no authentication
             rv = self.app.get(auth_url)
@@ -88,14 +118,30 @@ class FrontendTestCase(unittest.TestCase):
     def test_nic_update_parameters(self, mocked_auth):
         # Offline is an unsupported parameter
         rv = self.get_with_auth(self.url + '?offline=True')
-        self.assertEqual(rv.status_code, 200)
         self.assertResponseEqual(views.NOT_SUPPORTED, rv)
+
+    @patch('route53_dyndns.views.verify_auth', **{'method.return_value': True})
+    def test_nic_update_user_agent(self, mocked_auth):
+        # Test no user agent
+        rv = self.get_with_auth(self.url, environ_base={'HTTP_USER_AGENT': ''})
+        self.assertResponseEqual(views.BAD_USER_AGENT, rv)
+
+        # Test no bad user agents
+        with patch.dict(app.config, {'BAD_USER_AGENTS': []}):
+            rv = self.get_with_auth(self.url,
+                                    environ_base={'HTTP_USER_AGENT': "foobar"})
+            self.assertResponseEqual(views.NO_HOST, rv)
+
+        # Test bad user agent
+        with patch.dict(app.config, {'BAD_USER_AGENTS': ["foobar"]}):
+            rv = self.get_with_auth(self.url + '?hostname=foo',
+                                    environ_base={'HTTP_USER_AGENT': "foobar"})
+            self.assertResponseEqual(views.BAD_USER_AGENT, rv)
 
     @patch('route53_dyndns.views.verify_auth', **{'method.return_value': True})
     def test_nic_update_hostname(self, mocked_auth):
         # Test no hostname
         rv = self.get_with_auth(self.url)
-        self.assertEqual(rv.status_code, 200)
         self.assertResponseEqual(views.NO_HOST, rv)
 
         # Test a go wrong case when there's a Route 53 error
